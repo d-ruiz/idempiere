@@ -460,11 +460,16 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		m_header.setBounds (x, y, w, height);
 		//
 		y += height;
-		height = h - m_headerHeight - m_footerHeight - FOOTER_SAFETY_MARGIN; // add buffer
+		// Cap the safety margin so it never makes m_content height zero or negative.
+		// The effective margin is at most the space that would remain after reserving
+		// header + footer; if that remaining space is already <= 0 the margin is 0.
+		int availableForContent = h - m_headerHeight - m_footerHeight;
+		int effectiveSafetyMargin = Math.max(0, Math.min(FOOTER_SAFETY_MARGIN, availableForContent));
+		height = availableForContent - effectiveSafetyMargin; // add buffer
 		m_content.setBounds (x, y, w, height);
 		//
 		y += height;
-		height = m_footerHeight + FOOTER_SAFETY_MARGIN; // compensate here
+		height = m_footerHeight + effectiveSafetyMargin; // compensate here
 		m_footer.setBounds (x, y, w, height);
 
 		if (log.isLoggable(Level.FINE)) log.fine("Paper=" + m_paper + ",HeaderHeight=" + m_headerHeight + ",FooterHeight=" + m_footerHeight
