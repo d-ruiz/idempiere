@@ -452,16 +452,19 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		//
 		int y = (int)m_paper.getImageableY (true);
 		int h = (int)m_paper.getImageableHeight (true);
+		
+		// Safety margin to prevent content from overlapping footer
+	    int FOOTER_SAFETY_MARGIN = 15;
 
 		int height = m_headerHeight;
 		m_header.setBounds (x, y, w, height);
 		//
 		y += height;
-		height = h-m_headerHeight-m_footerHeight;
+		height = h - m_headerHeight - m_footerHeight - FOOTER_SAFETY_MARGIN; // add buffer
 		m_content.setBounds (x, y, w, height);
 		//
 		y += height;
-		height = m_footerHeight;
+		height = m_footerHeight + FOOTER_SAFETY_MARGIN; // compensate here
 		m_footer.setBounds (x, y, w, height);
 
 		if (log.isLoggable(Level.FINE)) log.fine("Paper=" + m_paper + ",HeaderHeight=" + m_headerHeight + ",FooterHeight=" + m_footerHeight
@@ -686,7 +689,9 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		if (m_tempNLPositon != 0)
 			xPos = m_tempNLPositon;
 
-		if (isYspaceFor(m_maxHeightSinceNewLine[m_area]))
+		if (m_area == AREA_CONTENT && !isYspaceFor(m_maxHeightSinceNewLine[m_area])) {
+	        newPage(true, false);
+	    } else if (isYspaceFor(m_maxHeightSinceNewLine[m_area]))
 		{
 			m_position[m_area].setLocation(xPos, m_position[m_area].y + m_maxHeightSinceNewLine[m_area]);
 			if (log.isLoggable(Level.FINEST)) log.finest("Page=" + m_pageNo + " [" + m_area + "] " + m_position[m_area].x + "/" + m_position[m_area].y);
