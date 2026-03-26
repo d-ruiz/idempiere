@@ -254,6 +254,9 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	public static Image			IMAGE_FALSE = null;
 	/** Image Size				*/
 	public static Dimension		IMAGE_SIZE = new Dimension(10,10);
+	
+	/** Footer safety margin to prevent content overlap (1/72 inch) */
+	private static final int FOOTER_SAFETY_MARGIN = 15;
 
 	private Map<MPrintFormatItem,PrintData> childPrintFormatDetails = new HashMap<MPrintFormatItem,PrintData>();
 	
@@ -453,9 +456,6 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		int y = (int)m_paper.getImageableY (true);
 		int h = (int)m_paper.getImageableHeight (true);
 		
-		// Safety margin to prevent content from overlapping footer
-	    int FOOTER_SAFETY_MARGIN = 15;
-
 		int height = m_headerHeight;
 		m_header.setBounds (x, y, w, height);
 		//
