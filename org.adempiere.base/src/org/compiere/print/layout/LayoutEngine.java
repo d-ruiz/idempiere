@@ -465,7 +465,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		// header + footer; if that remaining space is already <= 0 the margin is 0.
 		int availableForContent = h - m_headerHeight - m_footerHeight;
 		int effectiveSafetyMargin = Math.max(0, Math.min(FOOTER_SAFETY_MARGIN, availableForContent));
-		height = availableForContent - effectiveSafetyMargin; // add buffer
+		height = Math.max(1, availableForContent - effectiveSafetyMargin); // add buffer - never zero
 		m_content.setBounds (x, y, w, height);
 		//
 		y += height;
@@ -699,13 +699,6 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	    } else if (isYspaceFor(m_maxHeightSinceNewLine[m_area]))
 		{
 			m_position[m_area].setLocation(xPos, m_position[m_area].y + m_maxHeightSinceNewLine[m_area]);
-			if (log.isLoggable(Level.FINEST)) log.finest("Page=" + m_pageNo + " [" + m_area + "] " + m_position[m_area].x + "/" + m_position[m_area].y);
-		}
-		else if (m_area == AREA_CONTENT)
-		{
-			if (log.isLoggable(Level.FINEST)) log.finest("Not enough Y space "
-				+ m_lastHeight[m_area] + " - remaining " + getYspace() + " - Area=" + m_area);
-			newPage(true, false);
 			if (log.isLoggable(Level.FINEST)) log.finest("Page=" + m_pageNo + " [" + m_area + "] " + m_position[m_area].x + "/" + m_position[m_area].y);
 		}
 		else	//	footer/header
