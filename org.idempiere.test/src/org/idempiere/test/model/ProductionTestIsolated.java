@@ -462,7 +462,7 @@ public class ProductionTestIsolated extends AbstractTestCase {
 	}
 	
 	@Test
-	public void testBOMCosting() {
+	public void testBOMCostingDoesNotPostToSuspenseBalancing() {
 
 		MAcctSchema acctSchema = new MAcctSchema(Env.getCtx(), DictionaryIDs.C_AcctSchema.DOLLAR.id, getTrxName());
 		String originalCostingMethod = acctSchema.getCostingMethod();
