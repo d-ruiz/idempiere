@@ -469,78 +469,81 @@ public class ProductionTestIsolated extends AbstractTestCase {
 		String originalCostingMethod = acctSchema.getCostingMethod();
 		MCostElement averagePOElement = new MCostElement(Env.getCtx(), DictionaryIDs.M_CostElement.AVERAGE_PO.id, getTrxName());
 		boolean originalAveragePOActive = averagePOElement.isActive();
-		acctSchema.setCostingMethod(MAcctSchema.COSTINGMETHOD_StandardCosting);
-		acctSchema.saveEx();
 
-		//Deactivate Average PO Cost Element
-		DB.executeUpdateEx("UPDATE M_CostElement SET IsActive = 'N' WHERE  M_CostElement_ID=?", 
-				new Object[] {DictionaryIDs.M_CostElement.AVERAGE_PO.id}, getTrxName());
-
-		//
-		CacheMgt.get().reset();
-		
-		MProduct component1 = new MProduct(Env.getCtx(), 0, getTrxName());
-		component1.setName("BOMCosting_Component1");
-		component1.setIsStocked(true);
-		component1.setProductType(MProduct.PRODUCTTYPE_Item);
-		component1.setC_UOM_ID(DictionaryIDs.C_UOM.EACH.id);
-		component1.setC_TaxCategory_ID(DictionaryIDs.C_TaxCategory.STANDARD.id);
-		component1.setM_Product_Category_ID(DictionaryIDs.M_Product_Category.STANDARD.id);
-		component1.saveEx();
-
-		MCost cost1 = MCost.get(component1, 0, acctSchema, component1.getAD_Org_ID(), DictionaryIDs.M_CostElement.MATERIAL.id, getTrxName());
-		cost1.setFutureCostPrice(BigDecimal.valueOf(15.60));
-		cost1.saveEx();
-
-		MProduct component2 = new MProduct(Env.getCtx(), 0, getTrxName());
-		component2.setName("BOMCosting_Component2");
-		component2.setIsStocked(true);
-		component2.setProductType(MProduct.PRODUCTTYPE_Item);
-		component2.setC_UOM_ID(DictionaryIDs.C_UOM.EACH.id);
-		component2.setC_TaxCategory_ID(DictionaryIDs.C_TaxCategory.STANDARD.id);
-		component2.setM_Product_Category_ID(DictionaryIDs.M_Product_Category.STANDARD.id);
-		component2.saveEx();
-
-		MCost cost2 = MCost.get(component2, 0, acctSchema, component2.getAD_Org_ID(), DictionaryIDs.M_CostElement.MATERIAL.id, getTrxName());
-		cost2.setFutureCostPrice(BigDecimal.valueOf(43.84));
-		cost2.saveEx();
-
-		MProduct endProduct = new MProduct(Env.getCtx(), 0, getTrxName());
-		endProduct.setName("BOMCosting_EndProduct");
-		endProduct.setIsBOM(true);
-		endProduct.setIsStocked(true);
-		endProduct.setProductType(MProduct.PRODUCTTYPE_Item);
-		endProduct.setC_UOM_ID(DictionaryIDs.C_UOM.EACH.id);
-		endProduct.setC_TaxCategory_ID(DictionaryIDs.C_TaxCategory.STANDARD.id);
-		endProduct.setM_Product_Category_ID(DictionaryIDs.M_Product_Category.STANDARD.id);
-		endProduct.saveEx();
-
-		MCost cost3 = MCost.get(endProduct, 0, acctSchema, endProduct.getAD_Org_ID(), DictionaryIDs.M_CostElement.MATERIAL.id, getTrxName());
-		cost3.setFutureCostPrice(BigDecimal.valueOf(3.7));
-		cost3.saveEx();
-
-		MPPProductBOM bom = new MPPProductBOM(Env.getCtx(), 0, getTrxName());
-		bom.setM_Product_ID(endProduct.get_ID());		
-		bom.setBOMType(MPPProductBOM.BOMTYPE_CurrentActive);
-		bom.setBOMUse(MPPProductBOM.BOMUSE_Master);
-		bom.setName(endProduct.getName());
-		bom.saveEx();
-
-		MPPProductBOMLine line1 = new MPPProductBOMLine(bom);
-		line1.setM_Product_ID(component1.get_ID());
-		line1.setQtyBOM(new BigDecimal("0.23"));
-		line1.saveEx();
-
-		MPPProductBOMLine line2 = new MPPProductBOMLine(bom);
-		line2.setM_Product_ID(component2.get_ID());
-		line2.setQtyBOM(new BigDecimal("0.001"));
-		line2.saveEx();
-
-		endProduct.load(getTrxName());
-		endProduct.setIsVerified(true);
-		endProduct.saveEx();
-
+		MProduct component1 = null;
+		MProduct component2 = null;
+		MProduct endProduct = null;
 		try {
+			acctSchema.setCostingMethod(MAcctSchema.COSTINGMETHOD_StandardCosting);
+			acctSchema.saveEx();
+
+			// Deactivate Average PO Cost Element for this scenario.
+			averagePOElement.setIsActive(false);
+			averagePOElement.saveEx();
+
+			CacheMgt.get().reset();
+
+			component1 = new MProduct(Env.getCtx(), 0, getTrxName());
+			component1.setName("BOMCosting_Component1");
+			component1.setIsStocked(true);
+			component1.setProductType(MProduct.PRODUCTTYPE_Item);
+			component1.setC_UOM_ID(DictionaryIDs.C_UOM.EACH.id);
+			component1.setC_TaxCategory_ID(DictionaryIDs.C_TaxCategory.STANDARD.id);
+			component1.setM_Product_Category_ID(DictionaryIDs.M_Product_Category.STANDARD.id);
+			component1.saveEx();
+
+			MCost cost1 = MCost.get(component1, 0, acctSchema, component1.getAD_Org_ID(), DictionaryIDs.M_CostElement.MATERIAL.id, getTrxName());
+			cost1.setFutureCostPrice(BigDecimal.valueOf(15.60));
+			cost1.saveEx();
+
+			component2 = new MProduct(Env.getCtx(), 0, getTrxName());
+			component2.setName("BOMCosting_Component2");
+			component2.setIsStocked(true);
+			component2.setProductType(MProduct.PRODUCTTYPE_Item);
+			component2.setC_UOM_ID(DictionaryIDs.C_UOM.EACH.id);
+			component2.setC_TaxCategory_ID(DictionaryIDs.C_TaxCategory.STANDARD.id);
+			component2.setM_Product_Category_ID(DictionaryIDs.M_Product_Category.STANDARD.id);
+			component2.saveEx();
+
+			MCost cost2 = MCost.get(component2, 0, acctSchema, component2.getAD_Org_ID(), DictionaryIDs.M_CostElement.MATERIAL.id, getTrxName());
+			cost2.setFutureCostPrice(BigDecimal.valueOf(43.84));
+			cost2.saveEx();
+
+			endProduct = new MProduct(Env.getCtx(), 0, getTrxName());
+			endProduct.setName("BOMCosting_EndProduct");
+			endProduct.setIsBOM(true);
+			endProduct.setIsStocked(true);
+			endProduct.setProductType(MProduct.PRODUCTTYPE_Item);
+			endProduct.setC_UOM_ID(DictionaryIDs.C_UOM.EACH.id);
+			endProduct.setC_TaxCategory_ID(DictionaryIDs.C_TaxCategory.STANDARD.id);
+			endProduct.setM_Product_Category_ID(DictionaryIDs.M_Product_Category.STANDARD.id);
+			endProduct.saveEx();
+
+			MCost cost3 = MCost.get(endProduct, 0, acctSchema, endProduct.getAD_Org_ID(), DictionaryIDs.M_CostElement.MATERIAL.id, getTrxName());
+			cost3.setFutureCostPrice(BigDecimal.valueOf(3.7));
+			cost3.saveEx();
+
+			MPPProductBOM bom = new MPPProductBOM(Env.getCtx(), 0, getTrxName());
+			bom.setM_Product_ID(endProduct.get_ID());
+			bom.setBOMType(MPPProductBOM.BOMTYPE_CurrentActive);
+			bom.setBOMUse(MPPProductBOM.BOMUSE_Master);
+			bom.setName(endProduct.getName());
+			bom.saveEx();
+
+			MPPProductBOMLine line1 = new MPPProductBOMLine(bom);
+			line1.setM_Product_ID(component1.get_ID());
+			line1.setQtyBOM(new BigDecimal("0.23"));
+			line1.saveEx();
+
+			MPPProductBOMLine line2 = new MPPProductBOMLine(bom);
+			line2.setM_Product_ID(component2.get_ID());
+			line2.setQtyBOM(new BigDecimal("0.001"));
+			line2.saveEx();
+
+			endProduct.load(getTrxName());
+			endProduct.setIsVerified(true);
+			endProduct.saveEx();
+
 			// Run Standard Cost Update: Set Standard Cost to = Future Standard Cost, Document Type = Cost Adjustment
 			int costUpdateProcessId = DictionaryIDs.AD_Process.STANDARD_COST_UPDATE.id;
 			MProcess costUpdateProcess = MProcess.get(Env.getCtx(), costUpdateProcessId);
@@ -607,9 +610,12 @@ public class ProductionTestIsolated extends AbstractTestCase {
 			averagePOElementRestore.saveEx();
 
 			CacheMgt.get().reset();
-			component1.deleteEx(true);
-			component2.deleteEx(true);
-			endProduct.deleteEx(true);
+			if (component1 != null && component1.get_ID() > 0)
+				component1.deleteEx(true);
+			if (component2 != null && component2.get_ID() > 0)
+				component2.deleteEx(true);
+			if (endProduct != null && endProduct.get_ID() > 0)
+				endProduct.deleteEx(true);
 		}
 	}
 }
